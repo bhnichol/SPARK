@@ -24,8 +24,7 @@ const handleLogin = async (req, res) => {
         .input('id', sql.Int, results.recordset[0].user_id)
         .query(
             `SELECT role_id FROM SPARK_USER_ROLES
-             WHERE user_id = @id`)).recordset.flat()
-
+             WHERE user_id = @id`)).recordset.map(role => role.role_id);
         const match = await bcrypt.compare(pwd, results.recordset[0].pass_hash);
         if (match) {
 

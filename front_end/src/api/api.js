@@ -1,5 +1,9 @@
 
 const API_URL = {
+    AUTH: {
+        LOGIN_URL: '/auth',
+        REGISTER_URL: './register'
+    },
     ORG_URL: './org',
     EMP_URL: './employees',
     COURSE_URL: './courses',

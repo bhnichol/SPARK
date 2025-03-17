@@ -1,25 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+
+import { Route, Routes } from 'react-router-dom';
+import Login from './screens/Login';
+import MinLayout from './screens/minLayout';
+import PersistLogin from './components/persistLogin';
+import RequireAuth from './components/RequireAuth';
+import Home from './screens/Home';
+import MissingScreen from './screens/missingScreen';
+import Layout from './screens/layout';
+import Register from './screens/Register';
 
 function App() {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/" element={<MinLayout />}>
+
+        {/*Public Routes*/}
+        <Route path="login" index element={<Login />} />
+        <Route path="register" index element={<Register />} />
+
+        {/*Protected Routes*/}
+        <Route element={<PersistLogin />}>
+          <Route element={<RequireAuth allowedRoles={[1]} />}>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+            </Route>
+          </Route>
+        </Route>
+        <Route path = "*" element={<MissingScreen/>}/>
+      </Route>
+    </Routes>
   );
 }
+
 
 export default App;

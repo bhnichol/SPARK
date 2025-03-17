@@ -22,7 +22,7 @@ const handleRefreshToken = async (req, res) => {
         .input('id', sql.Int, results.recordset[0].USER_ID)
         .query(
             `SELECT role_id FROM SPARK_USER_ROLES
-             WHERE user_id = @id`)).recordset.flat()
+             WHERE user_id = @id`)).recordset.map(role => role.role_id);
         jwt.verify(
             refreshToken,
             process.env.REFRESH_TOKEN_SECRET,
