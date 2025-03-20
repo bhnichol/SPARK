@@ -8,10 +8,13 @@ import Home from './screens/Home';
 import MissingScreen from './screens/missingScreen';
 import Layout from './screens/layout';
 import Register from './screens/Register';
+import { ThemeProvider } from '@emotion/react';
+import { AppTheme } from './theme';
 
 function App() {
-
+  document.body.style = 'background-color: #1A1A1D'
   return (
+    <ThemeProvider theme={AppTheme}>
     <Routes>
       <Route path="/" element={<MinLayout />}>
 
@@ -30,6 +33,7 @@ function App() {
         <Route path = "*" element={<MissingScreen/>}/>
       </Route>
     </Routes>
+    </ThemeProvider>
   );
 }
 

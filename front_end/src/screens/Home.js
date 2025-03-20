@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import useLogout from "../hooks/useLogout";
-
+import { Button } from "@mui/material";
 const Home = () => {
     const logout = useLogout();
 
@@ -12,6 +12,7 @@ const Home = () => {
     };
 
     return (
+      
         <div>
         <div className="text-3xl">Home</div>
         <button onClick={() => handleLogout()}> Logout</button>

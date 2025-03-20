@@ -10,6 +10,9 @@ export const AppTheme = createTheme({
       },
       error:{
         main: '#cc0000'
+      },
+      background: {
+        default: "#1A1A1D"
       }
     },
   });
