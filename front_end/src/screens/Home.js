@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router";
 import useLogout from "../hooks/useLogout";
-import { Button } from "@mui/material";
 const Home = () => {
     const logout = useLogout();
 

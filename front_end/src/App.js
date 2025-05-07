@@ -10,11 +10,14 @@ import Layout from './screens/layout';
 import Register from './screens/Register';
 import { ThemeProvider } from '@emotion/react';
 import { AppTheme } from './theme';
+import ThemedWrapper from './components/themeWrapper';
+import Resources from './screens/Resources';
 
 function App() {
   document.body.style = 'background-color: #1A1A1D'
   return (
     <ThemeProvider theme={AppTheme}>
+      <ThemedWrapper>
     <Routes>
       <Route path="/" element={<MinLayout />}>
 
@@ -27,12 +30,14 @@ function App() {
           <Route element={<RequireAuth allowedRoles={[1]} />}>
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
+              <Route path='/resources' element={<Resources />} />
             </Route>
           </Route>
         </Route>
         <Route path = "*" element={<MissingScreen/>}/>
       </Route>
     </Routes>
+    </ThemedWrapper>
     </ThemeProvider>
   );
 }

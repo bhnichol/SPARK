@@ -5,10 +5,23 @@ const cookieParser = require('cookie-parser');
 const credentials = require('./middleware/credentials');
 const corsOptions = require('./config/corsOptions');
 const verifyJWT = require('./middleware/verifyJWT');
+const dbConnection = require('./config/dbConn');
+const oracledb = require("oracledb");
 require('dotenv').config();
 const app = express();
 
-const { poolPromise } = require('./db')
+async function init() {
+    try {
+
+      await oracledb.createPool(dbConnection);
+  
+      console.log("Pool created");
+    } catch (err) {
+      console.error("Failed to create pool:", err);
+    }
+  }
+  
+init();
 
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement

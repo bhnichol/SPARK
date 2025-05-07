@@ -12,7 +12,9 @@ export const AppTheme = createTheme({
         main: '#cc0000'
       },
       background: {
-        default: "#1A1A1D"
+        default: "#1A1A1D",
+        contrastBg: "#2E2E31",
+        boxOutline: "#333A45"
       }
     },
   });

@@ -63,10 +63,18 @@ function TopBar() {
 
   const BarIcons = () => {
     return (
-    <div> 
+    <div className='flex flex-row items-center'> 
       { navItems.map(item => {
+        const isActive = location.pathname === item.path;
         return (
-          <IconButton children={item.icon} sx={{color: 'primary.contrastText', width: '50px'}}/>
+          <Link to={item.path}>
+          <div className={`w-[50px] h-12 flex items-center justify-center text-white rounded hover:bg-[#1A1A1D]
+             ${isActive ? 'border-[[var(--mui-primary-contrast)] border text-[var(--mui-primary-contrast)] '  :
+                   'bg-[var(--mui-primary)] text-[var(--mui-primary-contrast)]'}
+              `}>
+          {item.icon}
+          </div>
+          </Link>
         )
       })
   

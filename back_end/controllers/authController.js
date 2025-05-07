@@ -1,37 +1,30 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const sql = require('mssql');
-const { poolPromise } = require('../db');
+const oracledb = require('oracledb');
 
 const handleLogin = async (req, res) => {
     const { email, pwd } = req.body;
     if (!email || !pwd) return res.status(400).json({ 'message': 'Username and password are required.' });
     try {
-        const pool = await poolPromise;
-        const results = await pool.request()
-        .input('email', sql.VarChar, email)
-        .query(
-            `SELECT aa.email, bb.pass_hash, aa.user_id FROM SPARK_USERS aa
-             LEFT JOIN SPARK_USER_PASS bb ON aa.user_id = bb.user_id 
-             WHERE aa.email = @email`)
-
-        if (results.recordset.length < 1) {
+        const conn = await oracledb.getConnection();
+        const results = await conn.execute(
+            `SELECT aa.email, bb.pass_hash, aa.USER_ID FROM SPARK_USERS aa
+             LEFT JOIN SPARK_USERS_PASS bb ON aa.USER_ID = bb.USER_ID
+             WHERE aa.email = :email`, [email], { outFormat: oracledb.OUT_FORMAT_OBJECT })
+        if (results.rows.length < 1) {
             console.log("User does not exist.")
             return res.sendStatus(401)
         }
-
-        const roles = (await pool.request()
-        .input('id', sql.Int, results.recordset[0].user_id)
-        .query(
-            `SELECT role_id FROM SPARK_USER_ROLES
-             WHERE user_id = @id`)).recordset.map(role => role.role_id);
-        const match = await bcrypt.compare(pwd, results.recordset[0].pass_hash);
+        const roles = (await conn.execute(
+            `SELECT role_id FROM SPARK_USERS_ROLES
+             WHERE USER_ID = :USER_ID`, [results.rows[0]['USER_ID']])).rows.flat()
+        const match = await bcrypt.compare(pwd, results.rows[0]['PASS_HASH']);
         if (match) {
 
             const accessToken = jwt.sign(
                 {
                     "UserInfo": {
-                        "email": results.recordset[0].EMAIL,
+                        "email": results.rows[0]['EMAIL'],
                         "roles": roles
                     }
                 },
@@ -39,23 +32,20 @@ const handleLogin = async (req, res) => {
                 { expiresIn: '15m' }
             );
             const refreshToken = jwt.sign(
-                { "email": results.recordset[0].email },
+                { "email": results.rows[0]['EMAIL'] },
                 process.env.REFRESH_TOKEN_SECRET,
                 { expiresIn: '1d' }
             );
-            await pool.request()
-            .input('token', sql.VarChar, refreshToken)
-            .input('id', sql.Int, results.recordset[0].user_id)
-            .query(
-                `UPDATE SPARK_USER_PASS
-                SET REFRESH_TOKEN = @token
-                WHERE user_id = @id`)
+            await conn.execute(
+                `UPDATE SPARK_USERS_PASS 
+                SET REFRESH_TOKEN = :token
+                WHERE USER_ID = :USER_ID`, [refreshToken, results.rows[0]['USER_ID']], { autoCommit: true })
             console.log(`Email, ${email} successfully logged in!`)
             // Creates Secure Cookie with refresh token
             res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', secure: true, maxAge: 24 * 60 * 60 * 1000 });
             // Send authorization roles and access token to user
             res.json({accessToken });
-
+            if(conn) conn.close();
         }
         else {
             console.log("Incorrect Password")
