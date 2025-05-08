@@ -3,8 +3,8 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import { AuthProvider } from './context/AuthProvider';
-import { BrowserRouter, Routes, Route } from 'react-router';
 import { disableReactDevTools } from '@fvilers/disable-react-devtools';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 if (process.env.NODE_ENV === 'production') {
   disableReactDevTools();

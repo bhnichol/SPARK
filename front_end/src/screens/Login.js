@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router-dom';
 import API_URL from '../api/api'
 import axios from '../api/axios';
 import useAuth from '../hooks/useAuth';

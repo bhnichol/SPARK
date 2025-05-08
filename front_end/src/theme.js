@@ -15,6 +15,10 @@ export const AppTheme = createTheme({
         default: "#1A1A1D",
         contrastBg: "#2E2E31",
         boxOutline: "#333A45"
+      },
+      button: {
+        secondary: "#3B4252",
+        secondaryHover: "#323846"
       }
     },
   });
