@@ -4,6 +4,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import SecondaryButton from "../Buttons/secondaryButton";
 import TextFieldStyled from "../TextFieldStyled";
 import { useRef, useState } from "react";
+import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import API_URL from "../../api/api";
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -14,21 +17,23 @@ const StyledList = styled(List)(({ theme }) => ({
   padding: 0,
 }));
 
-const StyledListItem = styled(ListItem)(({ theme, isSelected }) => ({
+const StyledListItem = styled(ListItem)(({ theme }) => ({
   '&:hover': {
-    backgroundColor: isSelected ? darken(theme.palette.primary.main, 0.1) : darken(theme.palette.background.contrastBg, 0.1),
+    backgroundColor: darken(theme.palette.background.contrastBg, 0.1),
     cursor: 'pointer',
   },
-  backgroundColor: isSelected ? theme.palette.primary.main : theme.palette.background.contrastBg,
-  color: isSelected ? theme.palette.primary.contrastText : theme.palette.primary.contrastText,
+  backgroundColor: theme.palette.background.contrastBg,
+  color: theme.palette.primary.contrastText,
 }));
 
 const EmpCreate = (props) => {
+  const axiosPrivate = useAxiosPrivate();
   const [errMsg, setErrMsg] = useState("");
   const [emps, setEmps] = useState([]);
-  const [selectedEmp, setSelectedEmp] = useState("");
   const nameRef = useRef();
+  const orgRef = useRef();
   const payRef = useRef();
+
   const addEmp = () => {
     if (nameRef.current.value !== "" && payRef.current.value !== "") {
       setEmps([...emps, { EMP_NAME: nameRef.current.value, PAY_RATE: payRef.current.value }])
@@ -41,21 +46,37 @@ const EmpCreate = (props) => {
     }
   }
 
-  const removeEmp = () => {
+  const removeEmp = (selectedEmp) => {
     if (selectedEmp !== "") {
       setEmps(emps.filter((emp, index) => index !== selectedEmp))
-      setSelectedEmp("");
     }
   }
 
-  const submitEmp = () => {
-
+  const submitEmp = async () => {
+    setErrMsg('');
+    try {
+        const response = await axiosPrivate.post(API_URL.EMP_URL,
+        JSON.stringify({ employees: emps })
+      )
+      
+      handleClose();
+      // props.onSuccess();
+    } catch (err) {
+      if (!err?.response) { setErrMsg('No Server Response') }
+      else if (err.response?.status === 400) {
+        setErrMsg('Employee details missing');
+      } else if (err.response?.status === 401) {
+        setErrMsg('Unauthorized Access');
+      }
+      else {
+        setErrMsg('Employees failed to be created.')
+      }
+    }
   }
 
   const handleClose = () => {
     setEmps([]);
     setErrMsg("");
-    setSelectedEmp("");
     props.onClose();
   };
   return (
@@ -68,19 +89,21 @@ const EmpCreate = (props) => {
       </DialogTitle>
       <div className="grid grid-cols-2 gap-4">
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', rowGap: '20px' }}>
-          <TextFieldStyled slotProps = { {htmlInput:{ maxLength: 50 }}} inputRef={nameRef} label="Name" sx={{ color: 'primary.contrastText' }} />
+          <TextFieldStyled slotProps={{ htmlInput: { maxLength: 50 } }} inputRef={nameRef} label="Name" />
           <TextFieldStyled inputRef={payRef} type="number" label="Pay Rate ($/hr)" />
+          <TextFieldStyled inputRef={orgRef} label="Organization" />
           <Typography color="error.main">{errMsg}</Typography>
         </DialogContent>
         <DialogContent>
           <StyledList >{emps.map((emp, index) => {
             return (
-              <StyledListItem sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }} isSelected={index === selectedEmp} onClick={() => { selectedEmp === index ? setSelectedEmp("") : setSelectedEmp(index) }}>
-                <div>
+              <StyledListItem sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <div className="max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap">
                   {emp.EMP_NAME}
                 </div>
                 <div>
                   ${parseFloat(emp.PAY_RATE).toFixed(2)} / hr
+                  <IconButton children={<DeleteOutlinedIcon sx={{ color: "error.main" }} />} onClick={() => removeEmp(index)} />
                 </div>
               </StyledListItem>
             )
@@ -90,7 +113,7 @@ const EmpCreate = (props) => {
       <DialogActions sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginLeft: '15px' }}>
         <SecondaryButton variant="contained" onClick={() => addEmp()}>Add</SecondaryButton>
         <div className=" flex flex-row gap-[10px]">
-          <SecondaryButton variant="contained" disabled={selectedEmp === "" || selectedEmp === null} onClick={() => removeEmp()}>Remove</SecondaryButton>
+          {/* <SecondaryButton variant="contained" disabled={selectedEmp === "" || selectedEmp === null} onClick={() => removeEmp()}>Remove</SecondaryButton> */}
           <Button variant="contained" color="success" onClick={() => submitEmp()}>Submit</Button>
         </div>
 

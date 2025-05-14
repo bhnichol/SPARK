@@ -3,12 +3,16 @@ import { Dialog, styled } from "@mui/material";
 const DialogStyled = styled(Dialog)(({theme}) => ({
 '& .MuiDialog-paper': {
     backgroundColor: theme.palette.background.default,
-     width: {
-                  xs: '90%',
-                  sm: '70%',
-                  md: '50%',
-                },
-
+     maxWidth: 'none',
+     [theme.breakpoints.up('sm')]: {
+      width: '70%',
+    },
+    [theme.breakpoints.up('md')]: {
+      width: '60%', // increase to test
+    },
+    [theme.breakpoints.up('lg')]: {
+      width: '50%', // increase here too
+    },
 }
 
 }));

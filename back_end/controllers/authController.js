@@ -25,6 +25,7 @@ const handleLogin = async (req, res) => {
                 {
                     "UserInfo": {
                         "email": results.rows[0]['EMAIL'],
+                        "user_id": results.rows[0]['USER_ID'],
                         "roles": roles
                     }
                 },
