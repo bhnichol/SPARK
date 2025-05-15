@@ -4,7 +4,7 @@ const dbConn = require('../config/dbConn');
 const getAllEmployees = async (req, res) => {
     try {
         const conn = await oracledb.getConnection();
-        const results = await conn.execute('SELECT * FROM SPARK_EMPLOYEES WHERE INACTIVE_IND != 1',[],{outFormat: oracledb.OUT_FORMAT_OBJECT});
+        const results = await conn.execute('SELECT EMP_ID, EMP_NAME, PAY_RATE, ORG_CODE FROM SPARK_EMPLOYEES WHERE INACTIVE_IND = 1 OR INACTIVE_IND IS NULL  AND USER_ID = :USER_ID',[Number(req.user_id)],{outFormat: oracledb.OUT_FORMAT_OBJECT});
         res.send(results.rows);
         if(conn){
             conn.close()
@@ -42,10 +42,9 @@ const createEmployee = async (req, res) => {
 
 const deleteEmployee = async (req, res) => {
     if (!req?.body?.empid) return res.status(400).json({ "message": 'empid required' });
-    const timestamp = new Date();
     try {
         const conn = await oracledb.getConnection();
-        const results = await conn.execute('UPDATE SPARK_EMPLOYEES SET INACTIVE_IND = 1, DELETE_DATE = :DELETE_DATE WHERE EMP_ID = :EMP_ID', [timestamp, req.body.empid],{autoCommit: true});
+        const results = await conn.execute('UPDATE SPARK_EMPLOYEES SET INACTIVE_IND = 1, DELETE_DATE = SYSDATE WHERE EMP_ID = :EMP_ID', [req.body.empid],{autoCommit: true});
         res.json(results)
         if(conn){
             conn.close()

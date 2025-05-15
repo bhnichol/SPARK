@@ -60,7 +60,7 @@ const EmpCreate = (props) => {
       )
       
       handleClose();
-      // props.onSuccess();
+      props.onSuccess();
     } catch (err) {
       if (!err?.response) { setErrMsg('No Server Response') }
       else if (err.response?.status === 400) {
@@ -97,7 +97,7 @@ const EmpCreate = (props) => {
         <DialogContent>
           <StyledList >{emps.map((emp, index) => {
             return (
-              <StyledListItem sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+              <StyledListItem key={index} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <div className="max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap">
                   {emp.EMP_NAME}
                 </div>

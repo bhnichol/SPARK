@@ -7,7 +7,7 @@ const verifyRoles = require('../../middleware/verifyRoles')
 router.route('/')
       .get(verifyRoles(rolesList.User), employeeController.getAllEmployees)
       .post(verifyRoles(rolesList.User), employeeController.createEmployee)
-      .delete(verifyRoles(rolesList.Admin), employeeController.deleteEmployee)
+      .delete(verifyRoles(rolesList.User), employeeController.deleteEmployee)
 
 
 module.exports = router;
