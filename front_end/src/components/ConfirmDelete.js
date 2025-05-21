@@ -26,7 +26,7 @@ const ConfirmDelete = (props) => {
         </DialogContent>
       <DialogActions sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginLeft: '15px' }}>
             <Button variant="contained" sx={{ bgcolor: 'error.main' }} onClick={() => handleClose()}>Cancel</Button>
-          <Button variant="contained" color="success" onClick={() => {props.onSuccess(); handleClose();}}>Submit</Button>
+          <Button variant="contained" color="success" onClick={() => {props.onSubmit(); handleClose();}}>Submit</Button>
       </DialogActions>
     </DialogStyled>
   )

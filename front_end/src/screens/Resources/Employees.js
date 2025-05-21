@@ -55,6 +55,22 @@ const Employees = () => {
         setSuccess(false);
     }, [success]);
 
+    const deleteEmp = async () => {
+            try {
+                setErrMsg("");
+                const response = await axiosPrivate.delete(API_URL.EMP_URL,
+                    {data:{empid:empDelete.EMP_ID}}
+                );
+                setSuccess(true);
+            } catch (err) {
+                if (!err?.response) {
+                    setErrMsg('No Server Response');
+                } else {
+                    setErrMsg('Failed to delete employee');
+                }
+            }
+    }
+
     return (
         <div className='space-y-[10px]'>
             <div className="h-[50px] rounded border border-[2px] border-[var(--mui-background-outline)] bg-[var(--mui-background-contrast)]">
@@ -73,7 +89,7 @@ const Employees = () => {
                 getRowId={(row) => row.EMP_ID}
             />
             <EmpCreate open={visible} onClose={() => setVisible(false)} onSuccess={() => setSuccess(true)} />
-            <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} target={empDelete.EMP_NAME}/>
+            <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} onSubmit={() => deleteEmp().then(setSuccess(true))} target={empDelete.EMP_NAME}/>
         </div>
     )
 }
