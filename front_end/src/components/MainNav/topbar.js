@@ -115,7 +115,7 @@ function TopBar() {
         <Toolbar sx={{ display: 'flex', justifyContent:'space-between' }}>
           <div className='flex h-full items-center'>
           <BarIcons/>
-          <Divider vertical sx={{backgroundColor: 'background.default'}}/>
+          
           <Typography
             variant="h6"
             component="div"
