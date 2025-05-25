@@ -4,7 +4,7 @@ const dbConn = require('../config/dbConn');
 const getAllEmployees = async (req, res) => {
     try {
         const conn = await oracledb.getConnection();
-        const results = await conn.execute('SELECT EMP_ID, EMP_NAME, PAY_RATE, ORG_CODE FROM SPARK_EMPLOYEES WHERE (INACTIVE_IND <> 1 OR INACTIVE_IND IS NULL)  AND USER_ID = :USER_ID ORDER BY EMP_ID ASC',[Number(req.user_id)],{outFormat: oracledb.OUT_FORMAT_OBJECT});
+        const results = await conn.execute('SELECT EMP_ID, EMP_NAME, PAY_RATE, ORG_ID FROM SPARK_EMPLOYEES WHERE (INACTIVE_IND <> 1 OR INACTIVE_IND IS NULL)  AND USER_ID = :USER_ID ORDER BY EMP_ID ASC',[Number(req.user_id)],{outFormat: oracledb.OUT_FORMAT_OBJECT});
         res.send(results.rows);
         if(conn){
             conn.close()
@@ -17,18 +17,18 @@ const getAllEmployees = async (req, res) => {
 const createEmployee = async (req, res) => {
     const {employees} = req.body;
     let err = false;
-    const NoIndexEmps = employees.map((emp) => {if(!emp.PAY_RATE || !emp.EMP_NAME) {err = true} return ({...emp, ORG_CODE: !emp.ORG_CODE ? null : emp.ORG_CODE, USER_ID: req.user_id, PAY_RATE: Number(emp.PAY_RATE)})})
+    const NoIndexEmps = employees.map((emp) => {if(!emp.PAY_RATE || !emp.EMP_NAME) {err = true} return ({...emp, ORG_ID: !emp.ORG_ID ? null : emp.ORG_ID, USER_ID: req.user_id, PAY_RATE: Number(emp.PAY_RATE)})})
      // let query = '';
     if (!employees || err)  return res.status(400).json({ 'message': 'missing employees' });
     try {
         const conn = await oracledb.getConnection();
-        const results = await conn.executeMany('INSERT INTO SPARK_EMPLOYEES (EMP_NAME, USER_ID, PAY_RATE, ORG_CODE) VALUES (:EMP_NAME, :USER_ID, :PAY_RATE, :ORG_CODE)',[...NoIndexEmps],
+        const results = await conn.executeMany('INSERT INTO SPARK_EMPLOYEES (EMP_NAME, USER_ID, PAY_RATE, ORG_ID) VALUES (:EMP_NAME, :USER_ID, :PAY_RATE, :ORG_ID)',[...NoIndexEmps],
             {autoCommit: true,    
             bindDefs: {
             EMP_NAME: { type: oracledb.STRING, maxSize: 50},
             USER_ID: {type: oracledb.NUMBER},
             PAY_RATE: { type: oracledb.NUMBER},
-            ORG_CODE: { type: oracledb.STRING, maxSize: 50}
+            ORG_ID: { type: oracledb.STRING, maxSize: 50}
         }});
         res.status(201).json({'message': `employees successfully created.`})
         if(conn){

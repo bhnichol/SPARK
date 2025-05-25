@@ -73,7 +73,7 @@ const Employees = () => {
 
     return (
         <div className='space-y-[10px]'>
-            <div className="h-[50px] rounded border border-[2px] border-[var(--mui-background-outline)] bg-[var(--mui-background-contrast)]">
+            <div className="h-[70px] rounded border border-[2px] border-[var(--mui-background-outline)] bg-[var(--mui-background-contrast)]">
                 <div className="flex justify-end space-x-[20px] items-center h-full pr-[10px]">
                     <SecondaryButton variant="contained" onClick={() => setVisible(true)} disabled={emps.length>=10}><AddIcon />Create</SecondaryButton>
                     <SecondaryButton variant="contained"><FileDownloadIcon />Export</SecondaryButton>

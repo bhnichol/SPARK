@@ -22,7 +22,7 @@ function App() {
     <ThemeProvider theme={AppTheme}>
       <ThemedWrapper>
       <Routes>
-        <Route path="/" element={<MinLayout />}>
+        <Route path="/" element={<MinLayout/>}>
           {/* Public Routes */}
           <Route path="login" index element={<Login />} />
           <Route path="register" index element={<Register />} />

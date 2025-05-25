@@ -1,4 +1,4 @@
-import { Button, darken, DialogActions, DialogContent, DialogTitle, FormControl, IconButton, InputLabel, List, ListItem, MenuItem, styled, Typography } from "@mui/material";
+import { Autocomplete, Button, darken, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, styled, Tooltip, Typography } from "@mui/material";
 import DialogStyled from "../DialogStyled";
 import CloseIcon from '@mui/icons-material/Close';
 import SecondaryButton from "../Buttons/secondaryButton";
@@ -7,7 +7,8 @@ import { useRef, useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import API_URL from "../../api/api";
-import SelectStyled from "../SelectStyled";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -31,12 +32,19 @@ const OrgCreate = (props) => {
   const axiosPrivate = useAxiosPrivate();
   const [errMsg, setErrMsg] = useState("");
   const [emps, setEmps] = useState([]);
-  const nameRef = useRef();
-  const [empSelect, setEmpSelect] = useState({})
-  const [parent, setParent] = useState({});
+  const [name,setName] = useState("");
+  const [empSelect, setEmpSelect] = useState(null)
+  const [parent, setParent] = useState(null);
+  const [empInputValue, setEmpInputValue] = useState("");
+  const [parentInputValue, setParentInputValue] = useState("");
 
   const addEmp = () => {
-
+    if (empSelect !== null) {
+      setEmps([...emps, empSelect]);
+      setEmpSelect(null);
+      setEmpInputValue("");
+      setErrMsg("");
+    }
   }
 
   const removeEmp = (selectedEmp) => {
@@ -45,31 +53,42 @@ const OrgCreate = (props) => {
     }
   }
 
-  const submitEmp = async () => {
+  const submitOrg = async () => {
     setErrMsg('');
+    if(name === null || name === "") {
+      setErrMsg('Please add a name');
+    }
+    else {
     try {
-      const response = await axiosPrivate.post(API_URL.EMP_URL,
-        JSON.stringify({ employees: emps })
+      const response = await axiosPrivate.post(API_URL.ORG_URL,
+        JSON.stringify({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null})
       )
 
       handleClose();
       props.onSuccess();
     } catch (err) {
+      console.log(err);
       if (!err?.response) { setErrMsg('No Server Response') }
       else if (err.response?.status === 400) {
-        setErrMsg('Employee details missing');
+        setErrMsg('Org details missing');
       } else if (err.response?.status === 401) {
         setErrMsg('Unauthorized Access');
       }
       else {
-        setErrMsg('Employees failed to be created.');
+        setErrMsg('Org failed to be created.');
       }
     }
+  }
   }
 
   const handleClose = () => {
     setEmps([]);
     setErrMsg("");
+    setEmpInputValue("");
+    setParentInputValue("");
+    setEmpSelect(null);
+    setParent(null);
+    setName("");
     props.onClose();
   };
   return (
@@ -82,15 +101,41 @@ const OrgCreate = (props) => {
       </DialogTitle>
       <div className="grid grid-cols-2 gap-4">
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', rowGap: '20px' }}>
-          <TextFieldStyled slotProps={{ htmlInput: { maxLength: 50 } }} inputRef={nameRef} label="Name" />
-          <FormControl>
-            <InputLabel sx={{color:"primary.contrastText"}}>Parent Organization</InputLabel>
-            <SelectStyled variant="outlined"  value={parent} onChange={(e) => setParent(e.target.value)} label="Parent Organization"><MenuItem  value="Test">Test</MenuItem></SelectStyled>
-          </FormControl>
-          <FormControl>
-            <InputLabel sx={{color:"primary.contrastText"}}>Employee to Add</InputLabel>
-            <SelectStyled variant="outlined" value={empSelect} onChange={(e) => setEmpSelect(e.target.value)} label="Employee to Add"/>
-          </FormControl>
+          <TextFieldStyled slotProps={{ htmlInput: { maxLength: 50 } }} value={name} onChange={(e) => setName(e.target.value)} label="Name" />
+          <Autocomplete
+            options={props.orgs}
+            getOptionLabel={(option) => option.ORG_NAME}
+            onChange={(event, newValue) => setParent(newValue)}
+            inputValue={parentInputValue}
+            onInputChange={(event, newInputValue) => setParentInputValue(newInputValue)}
+            popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
+            value={parent}
+            renderInput={(params) => (
+              <TextFieldStyled
+                {...params}
+                label="Parent Organization"
+                variant="outlined"
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.ORG_ID === value.ORG_ID}
+          />
+          <Autocomplete
+            options={props.emps.filter(emp => !emps.some(a => a.EMP_ID === emp.EMP_ID))}
+            getOptionLabel={(option) => option.EMP_NAME}
+            onChange={(event, newValue) => setEmpSelect(newValue)}
+            inputValue={empInputValue}
+            onInputChange={(event, newInputValue) => setEmpInputValue(newInputValue)}
+            popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
+            value={empSelect}
+            renderInput={(params) => (
+              <TextFieldStyled
+                {...params}
+                label="Member to Add"
+                variant="outlined"
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.EMP_NAME === value.EMP_NAME}
+          />
           <Typography color="error.main">{errMsg}</Typography>
         </DialogContent>
         <DialogContent>
@@ -99,9 +144,10 @@ const OrgCreate = (props) => {
               <StyledListItem key={index} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <div className="max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap">
                   {emp.EMP_NAME}
+                  
                 </div>
                 <div>
-                  ${parseFloat(emp.PAY_RATE).toFixed(2)} / hr
+                  {emp.ORG_ID !== null ? <Tooltip title={"This person is already in an organization: " + emp.ORG_NAME}><WarningAmberIcon sx={{color: "warning.main"}}/></Tooltip> : <></>}
                   <IconButton children={<DeleteOutlinedIcon sx={{ color: "error.main" }} />} onClick={() => removeEmp(index)} />
                 </div>
               </StyledListItem>
@@ -113,7 +159,7 @@ const OrgCreate = (props) => {
         <SecondaryButton variant="contained" onClick={() => addEmp()}>Add Member</SecondaryButton>
         <div className=" flex flex-row gap-[10px]">
           {/* <SecondaryButton variant="contained" disabled={selectedEmp === "" || selectedEmp === null} onClick={() => removeEmp()}>Remove</SecondaryButton> */}
-          <Button variant="contained" color="success" onClick={() => submitEmp()}>Submit</Button>
+          <Button variant="contained" color="success" onClick={() => submitOrg()}>Submit</Button>
         </div>
 
       </DialogActions>

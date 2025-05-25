@@ -4,11 +4,12 @@ import {jwtDecode} from "jwt-decode"
 const RequireAuth = ({ allowedRoles }) => {
     const { auth } = useAuth();
     const location = useLocation();
-
+    const dev = false;
     const decoded = auth?.accessToken ?
                     jwtDecode(auth.accessToken) : undefined;
-    const roles = decoded?.UserInfo?.roles || [];
 
+    const roles = dev === true ? [1,2,3] : decoded?.UserInfo?.roles || [];;
+   
     return (
         roles.find(role => allowedRoles?.includes(role))
             ? <Outlet />
