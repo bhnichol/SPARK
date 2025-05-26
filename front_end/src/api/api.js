@@ -5,6 +5,10 @@ const API_URL = {
         REGISTER_URL: './register'
     },
     ORG_URL: './org',
+    ORG_MAN_URL: {
+        REMOVE: './org/remove/:id',
+        EDIT: './org/update/:id'
+    },
     EMP_URL: './employees',
     STATUS_URL: './status',
     ROLES_URL: './roles'

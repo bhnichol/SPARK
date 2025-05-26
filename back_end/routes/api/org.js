@@ -8,6 +8,9 @@ router.route('/')
       .get(verifyRoles(rolesList.User), orgController.getAllOrgs)
       .post(verifyRoles(rolesList.User), orgController.createOrg)
       .delete(verifyRoles(rolesList.User), orgController.deleteOrg)
-
+router.route('/remove/:id')
+      .post(verifyRoles(rolesList.User), orgController.removeEmp)
+router.route('/update/:id')
+      .post(verifyRoles(rolesList.User), orgController.editOrg)
 
 module.exports = router;

@@ -3,12 +3,14 @@ import DialogStyled from "../DialogStyled";
 import CloseIcon from '@mui/icons-material/Close';
 import SecondaryButton from "../Buttons/secondaryButton";
 import TextFieldStyled from "../TextFieldStyled";
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import API_URL from "../../api/api";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import substituteUrlParams from "../../api/util";
+import ConfirmDelete from "../ConfirmDelete";
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -28,15 +30,26 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
   color: theme.palette.primary.contrastText,
 }));
 
-const OrgCreate = (props) => {
+const OrgEdit = (props) => {
   const axiosPrivate = useAxiosPrivate();
   const [errMsg, setErrMsg] = useState("");
   const [emps, setEmps] = useState([]);
-  const [name,setName] = useState("");
+  const [name, setName] = useState(null);
   const [empSelect, setEmpSelect] = useState(null)
   const [parent, setParent] = useState(null);
   const [empInputValue, setEmpInputValue] = useState("");
   const [parentInputValue, setParentInputValue] = useState("");
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+
+  useEffect(() => {
+    if (props.org) {
+      setName(props.org.ORG_NAME);
+      setParent(props.orgs.find(org => Number(org.ORG_ID) === Number(props.org.PARENT_ORG)) ?? null);
+      setEmps((Array.isArray(props.emps) ? props.emps : []).filter(emp =>  Number(emp.ORG_ID) === Number(props.org.ORG_ID)));
+    }
+   
+  }, [props.org, props.emps, props.open]);
 
   const addEmp = () => {
     if (empSelect !== null) {
@@ -55,30 +68,58 @@ const OrgCreate = (props) => {
 
   const submitOrg = async () => {
     setErrMsg('');
-    if(name === null || name === "") {
+    if (name === null || name === "") {
       setErrMsg('Please add a name');
     }
     else {
-    try {
-      const response = await axiosPrivate.post(API_URL.ORG_URL,
-        JSON.stringify({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null})
-      )
+      try {
+        await axiosPrivate.post(substituteUrlParams(API_URL.ORG_MAN_URL.EDIT, {id: props.org.ORG_ID ?? null}),
+          JSON.stringify({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null })
+        )
 
-      handleClose();
-      props.onSuccess();
-    } catch (err) {
-      console.log(err);
-      if (!err?.response) { setErrMsg('No Server Response') }
-      else if (err.response?.status === 400) {
-        setErrMsg('Org details missing');
-      } else if (err.response?.status === 401) {
-        setErrMsg('Unauthorized Access');
-      }
-      else {
-        setErrMsg('Org failed to be created.');
+        handleClose();
+        props.onSuccess();
+      } catch (err) {
+        console.log(err);
+        if (!err?.response) { setErrMsg('No Server Response') }
+        else if (err.response?.status === 400) {
+          setErrMsg('Org details missing');
+        } else if (err.response?.status === 401) {
+          setErrMsg('Unauthorized Access');
+        }
+        else {
+          setErrMsg('Org failed to be created.');
+        }
       }
     }
   }
+
+  const deleteOrg = async () => {
+    setErrMsg('');
+     if (!props.org) {
+      setErrMsg('Please select a organization');
+    }
+    else {
+      try {
+        await axiosPrivate.delete(API_URL.ORG_URL,
+          {data:{orgid:props.org.ORG_ID}}
+        )
+
+        handleClose();
+        props.onSuccess();
+      } catch (err) {
+        console.log(err);
+        if (!err?.response) { setErrMsg('No Server Response') }
+        else if (err.response?.status === 400) {
+          setErrMsg('Org details missing');
+        } else if (err.response?.status === 401) {
+          setErrMsg('Unauthorized Access');
+        }
+        else {
+          setErrMsg('Org failed to be deleted.');
+        }
+      }
+    }
   }
 
   const handleClose = () => {
@@ -94,7 +135,7 @@ const OrgCreate = (props) => {
   return (
     <DialogStyled open={props.open} onClose={props.onClose} fullWidth>
       <DialogTitle sx={{ color: 'primary.contrastText', display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-        Create Organization
+        Edit Organization: {props.org?.ORG_NAME}
         <IconButton edge='end' onClick={() => handleClose()}>
           <CloseIcon sx={{ color: 'error.main' }} />
         </IconButton>
@@ -103,7 +144,7 @@ const OrgCreate = (props) => {
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', rowGap: '20px' }}>
           <TextFieldStyled slotProps={{ htmlInput: { maxLength: 50 } }} value={name} onChange={(e) => setName(e.target.value)} label="Name" />
           <Autocomplete
-            options={props.orgs}
+            options={(Array.isArray(props.orgs) ? props.orgs : []).filter(org => org.PARENT_ORG !== props.org?.PARENT_ORG ?? null)}
             getOptionLabel={(option) => option.ORG_NAME}
             onChange={(event, newValue) => setParent(newValue)}
             inputValue={parentInputValue}
@@ -144,10 +185,10 @@ const OrgCreate = (props) => {
               <StyledListItem key={index} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                 <div className="max-w-[50%] overflow-hidden text-ellipsis whitespace-nowrap">
                   {emp.EMP_NAME}
-                  
+
                 </div>
                 <div>
-                  {emp.ORG_ID !== null ? <Tooltip title={"This person is already in an organization: " + emp.ORG_NAME}><WarningAmberIcon sx={{color: "warning.main"}}/></Tooltip> : <></>}
+                  {Number(emp.ORG_ID) !== Number(props.org?.ORG_ID ?? null) && emp.ORG_ID !== null ? <Tooltip title={"This person is already in an organization: " + emp.ORG_NAME}><WarningAmberIcon sx={{ color: "warning.main" }} /></Tooltip> : <></>}
                   <IconButton children={<DeleteOutlinedIcon sx={{ color: "error.main" }} />} onClick={() => removeEmp(index)} />
                 </div>
               </StyledListItem>
@@ -158,13 +199,14 @@ const OrgCreate = (props) => {
       <DialogActions sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginLeft: '15px' }}>
         <SecondaryButton variant="contained" onClick={() => addEmp()}>Add Member</SecondaryButton>
         <div className=" flex flex-row gap-[10px]">
-          {/* <SecondaryButton variant="contained" disabled={selectedEmp === "" || selectedEmp === null} onClick={() => removeEmp()}>Remove</SecondaryButton> */}
+          <Button variant="contained" sx={{backgroundColor:"error.main"}} onClick={() => setConfirmDelete(true)}>Delete Organization</Button>
           <Button variant="contained" color="success" onClick={() => submitOrg()}>Submit</Button>
         </div>
 
       </DialogActions>
+      <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} onSubmit={() => deleteOrg().then(handleClose())} target={props.org?.ORG_NAME ?? ""}/>
     </DialogStyled>
   )
 }
 
-export default OrgCreate;
+export default OrgEdit;

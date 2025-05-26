@@ -4,7 +4,7 @@ const dbConn = require('../config/dbConn');
 const getAllEmployees = async (req, res) => {
     try {
         const conn = await oracledb.getConnection();
-        const results = await conn.execute('SELECT EMP_ID, EMP_NAME, PAY_RATE, ORG_ID FROM SPARK_EMPLOYEES WHERE (INACTIVE_IND <> 1 OR INACTIVE_IND IS NULL)  AND USER_ID = :USER_ID ORDER BY EMP_ID ASC',[Number(req.user_id)],{outFormat: oracledb.OUT_FORMAT_OBJECT});
+        const results = await conn.execute('SELECT aa.EMP_ID, aa.EMP_NAME, aa.PAY_RATE, aa.ORG_ID, bb.ORG_NAME FROM SPARK_EMPLOYEES aa LEFT JOIN SPARK_ORGS bb ON aa.ORG_ID = bb.ORG_ID WHERE (aa.INACTIVE_IND <> 1 OR aa.INACTIVE_IND IS NULL)  AND aa.USER_ID = :USER_ID ORDER BY aa.EMP_ID ASC',[Number(req.user_id)],{outFormat: oracledb.OUT_FORMAT_OBJECT});
         res.send(results.rows);
         if(conn){
             conn.close()
