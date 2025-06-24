@@ -15,38 +15,43 @@ import Resources from './screens/Resources/Resources';
 import Employees from './screens/Resources/Employees';
 import Organizations from './screens/Resources/Organizations';
 import Nonlabor from './screens/Resources/Nonlabor';
+import Projects from './screens/Projects/Projects';
+import ProjectCreate from './screens/Projects/ProjectCreate';
 
 function App() {
   document.body.style = 'background-color: #1A1A1D'
   return (
     <ThemeProvider theme={AppTheme}>
       <ThemedWrapper>
-      <Routes>
-        <Route path="/" element={<MinLayout/>}>
-          {/* Public Routes */}
-          <Route path="login" index element={<Login />} />
-          <Route path="register" index element={<Register />} />
+        <Routes>
+          <Route path="/" element={<MinLayout />}>
+            {/* Public Routes */}
+            <Route path="login" index element={<Login />} />
+            <Route path="register" index element={<Register />} />
 
-          {/* Protected Routes */}
-          <Route element={<PersistLogin />}>
-            <Route element={<RequireAuth allowedRoles={[1]} />}>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="/resources" element={<Resources />}>
-                  <Route path="/resources/emp" element={<Employees />} />
-                  <Route path="/resources/org" element={<Organizations />} />
-                  <Route path="/resources/nonlabor" element={<Nonlabor />} />
+            {/* Protected Routes */}
+            <Route element={<PersistLogin />}>
+              <Route element={<RequireAuth allowedRoles={[1]} />}>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="/resources" element={<Resources />}>
+                    <Route path="/resources/emp" element={<Employees />} />
+                    <Route path="/resources/org" element={<Organizations />} />
+                    <Route path="/resources/nonlabor" element={<Nonlabor />} />
+                  </Route>
+                  <Route path="/projects" element={<Projects />}>
+                    <Route path="/projects/create" element={<ProjectCreate />} />
+                  </Route>
                 </Route>
               </Route>
             </Route>
+
+            {/* Catch-all route for missing pages */}
+            <Route path="*" element={<MissingScreen />} />
           </Route>
+        </Routes>
 
-          {/* Catch-all route for missing pages */}
-          <Route path="*" element={<MissingScreen />} />
-        </Route>
-      </Routes>
-
-    </ThemedWrapper>
+      </ThemedWrapper>
     </ThemeProvider>
   );
 }

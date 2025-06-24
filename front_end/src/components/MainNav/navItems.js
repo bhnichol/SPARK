@@ -4,7 +4,7 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import PeopleAlt from '@mui/icons-material/PeopleAlt';
 
 const navItems = [{ text: 'Home', path: '/', icon: <HouseOutlinedIcon/> },
-    { text: 'Projects', path: '/project', icon: <MenuBookOutlinedIcon /> },
+    { text: 'Projects', path: '/projects', icon: <MenuBookOutlinedIcon /> },
     { text: 'Resources', path: '/resources', icon: <PeopleAlt /> },
     { text: 'Reports', path: '/reports', icon: <MenuBookOutlinedIcon /> },
     { text: 'Configuration', path: '/config', icon: <AccountTreeOutlinedIcon /> }
