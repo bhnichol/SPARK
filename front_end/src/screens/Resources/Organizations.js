@@ -4,7 +4,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import { useEffect, useState } from "react";
 import OrgCreate from "../../components/Resources/OrgCreate";
-import { Autocomplete, IconButton, Typography, useTheme } from "@mui/material";
+import { Autocomplete, Box, IconButton, Typography, useTheme } from "@mui/material";
 import TextFieldStyled from "../../components/TextFieldStyled";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -148,7 +148,26 @@ const Organizations = () => {
       </div>
       <Typography sx={{ color: "error.main" }}>{errMsg}</Typography>
       {selectedOrg === null || selectedOrg === undefined ?
-        <Typography sx={{ color: "primary.contrastText" }}>No Organization Selected</Typography> :
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Typography align="center"
+            sx={{
+              fontStyle: 'italic',
+              color: '#ffffffcc',
+              fontFamily: '"Chalkboard", "Comic Sans MS", cursive',
+              fontSize: '1.5rem',
+              mt: 2,
+            }}>
+            No Organization Selected
+          </Typography>
+        </Box>
+        :
         <DataGridStyled
           rows={(Array.isArray(emps) ? emps : []).filter(emp => { return Number(emp.ORG_ID) === Number(selectedOrg.ORG_ID) })}
           columns={columns}
