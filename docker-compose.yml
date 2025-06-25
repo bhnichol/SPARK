@@ -1,0 +1,25 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./back_end
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./back_end:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "run", "start"]
+
+  frontend:
+    build:
+      context: ./front_end
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./front_end:/app
+    environment:
+      - NODE_ENV=development
+    command: ["npm", "start"]
