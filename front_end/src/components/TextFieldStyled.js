@@ -17,6 +17,9 @@ const TextFieldStyled = styled(TextField)(({theme}) => ({
           borderColor: theme.palette.background.boxOutline,
         },
       },
+       '&.Mui-disabled': {
+        color: 'primary.contrastText', 
+      },
 }))
 
 export default TextFieldStyled;
