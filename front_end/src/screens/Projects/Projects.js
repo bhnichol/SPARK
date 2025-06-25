@@ -15,8 +15,8 @@ const Projects = () => {
     <div className="m-[10px] space-y-[10px] flex flex-col h-full">
       <div className="h-[50px] rounded border border-[2px] border-[var(--mui-background-outline)] bg-[var(--mui-background-contrast)]">
         <div className="flex justify-end space-x-[20px] items-center h-full pr-[10px]">
-          <SearchDropdown options={[{label:"option1" }]} value={selectedProject} onChange={setSelectedProject}/>
-          <SecondaryButton variant="contained" onClick={() => navigate("/projects/create")} disabled={projectSearch.length>=5}><AddIcon />Create</SecondaryButton>
+          <SearchDropdown options={[{label:"option1" }]} value={selectedProject} onChange={setSelectedProject} />
+          <SecondaryButton variant="contained" onClick={() => navigate("/projects/create")} disabled={projectSearch.length>=5 || location.pathname === "/projects/create"}><AddIcon />Create</SecondaryButton>
           <div className="text-white" >{projectSearch.length}/5 <MenuBookOutlinedIcon sx={{ color: "white" }} /></div>
         </div>
       </div>

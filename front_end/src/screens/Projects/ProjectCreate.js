@@ -4,7 +4,7 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AddIcon from '@mui/icons-material/Add';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SearchDropdown from "../../components/SearchDropdown";
+
 import SecondaryButton from "../../components/Buttons/secondaryButton";
 import TextFieldStyled from "../../components/TextFieldStyled";
 
@@ -98,7 +98,7 @@ const ProjectCreate = () => {
       </div>
       </AccordionSummary>
       <AccordionDetails>
-
+            
       </AccordionDetails>
       </Accordion>
 

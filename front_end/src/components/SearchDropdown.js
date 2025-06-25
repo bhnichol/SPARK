@@ -1,7 +1,9 @@
 import { Autocomplete, TextField } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 
 const SearchDropdown = ({ options, value, onChange }) => {
+  const location = useLocation();
   return (
     <Autocomplete
       options={options}
@@ -9,6 +11,7 @@ const SearchDropdown = ({ options, value, onChange }) => {
       getOptionLabel={(option) => option.label}
       isOptionEqualToValue={(option, value) => option.label === value.label}
       onChange={(event, newValue) => onChange(newValue)}
+      disabled={location.pathname === "/projects/create"}
       renderInput={(params) => (
         <TextField
           {...params}
@@ -16,6 +19,7 @@ const SearchDropdown = ({ options, value, onChange }) => {
           variant="outlined"
           size="small"
           color="primary"
+          
           sx={{
             '& .MuiInputBase-root': {
               color: 'primary.contrastText', // Input text color
