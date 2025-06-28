@@ -11,6 +11,9 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=false
+      - WDS_SOCKET_PORT=5000
     command: ["npm", "run", "start"]
 
   frontend:
@@ -20,6 +23,10 @@ services:
       - "3000:3000"
     volumes:
       - ./front_end:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - FAST_REFRESH=false
+      - WDS_SOCKET_PORT=3000
     command: ["npm", "start"]

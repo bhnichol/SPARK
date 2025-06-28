@@ -17,9 +17,26 @@ import Organizations from './screens/Resources/Organizations';
 import Nonlabor from './screens/Resources/Nonlabor';
 import Projects from './screens/Projects/Projects';
 import ProjectCreate from './screens/Projects/ProjectCreate';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearEmployees, fetchEmployees } from './redux/features/empSlice';
+import useAuth from './hooks/useAuth';
+import { useEffect } from 'react';
+import useAxiosPrivate from './hooks/useAxiosPrivate';
 
 function App() {
   document.body.style = 'background-color: #1A1A1D'
+  const auth = useAuth();
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
+  const axios = useAxiosPrivate();
+
+useEffect(() => {
+  if (auth?.accessToken) {
+    dispatch(fetchEmployees(axios));
+  } else {
+    dispatch(clearEmployees());
+  }
+}, [auth?.accessToken, dispatch]);
   return (
     <ThemeProvider theme={AppTheme}>
       <ThemedWrapper>

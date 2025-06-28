@@ -6,7 +6,8 @@ import TextFieldStyled from "../TextFieldStyled";
 import { useRef, useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import API_URL from "../../api/api";
+import { useDispatch } from "react-redux";
+import { createEmployee } from "../../redux/features/empSlice";
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -28,6 +29,7 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
 
 const EmpCreate = (props) => {
   const axiosPrivate = useAxiosPrivate();
+  const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [emps, setEmps] = useState([]);
   const nameRef = useRef();
@@ -55,12 +57,8 @@ const EmpCreate = (props) => {
   const submitEmp = async () => {
     setErrMsg('');
     try {
-        const response = await axiosPrivate.post(API_URL.EMP_URL,
-        JSON.stringify({ employees: emps })
-      )
-      
-      handleClose();
-      props.onSuccess();
+        await dispatch(createEmployee({empData: emps, axios: axiosPrivate})).unwrap()
+        handleClose();
     } catch (err) {
       if (!err?.response) { setErrMsg('No Server Response') }
       else if (err.response?.status === 400) {
