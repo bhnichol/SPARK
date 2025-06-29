@@ -1,4 +1,4 @@
-import { Button, darken, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, styled, Typography } from "@mui/material";
+import { Autocomplete, Button, darken, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, styled, Typography } from "@mui/material";
 import DialogStyled from "../DialogStyled";
 import CloseIcon from '@mui/icons-material/Close';
 import SecondaryButton from "../Buttons/secondaryButton";
@@ -6,8 +6,9 @@ import TextFieldStyled from "../TextFieldStyled";
 import { useRef, useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createEmployee } from "../../redux/features/empSlice";
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -32,15 +33,17 @@ const EmpCreate = (props) => {
   const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [emps, setEmps] = useState([]);
+  const orgs = useSelector((state) => state.organizations.list);
   const nameRef = useRef();
-  const orgRef = useRef();
+  const [org, setOrg] = useState(null);
   const payRef = useRef();
 
   const addEmp = () => {
     if (nameRef.current.value !== "" && payRef.current.value !== "") {
-      setEmps([...emps, { EMP_NAME: nameRef.current.value, PAY_RATE: payRef.current.value }])
+      setEmps([...emps, { EMP_NAME: nameRef.current.value, PAY_RATE: payRef.current.value, ORG_ID: org.ORG_ID ?? null }])
       nameRef.current.value = '';
       payRef.current.value = '';
+      setOrg(null);
       setErrMsg("");
     }
     else {
@@ -57,8 +60,8 @@ const EmpCreate = (props) => {
   const submitEmp = async () => {
     setErrMsg('');
     try {
-        await dispatch(createEmployee({empData: emps, axios: axiosPrivate})).unwrap()
-        handleClose();
+      await dispatch(createEmployee({ empData: emps, axios: axiosPrivate })).unwrap()
+      handleClose();
     } catch (err) {
       if (!err?.response) { setErrMsg('No Server Response') }
       else if (err.response?.status === 400) {
@@ -89,7 +92,21 @@ const EmpCreate = (props) => {
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', rowGap: '20px' }}>
           <TextFieldStyled slotProps={{ htmlInput: { maxLength: 50 } }} inputRef={nameRef} label="Name" />
           <TextFieldStyled inputRef={payRef} type="number" label="Pay Rate ($/hr)" />
-          <TextFieldStyled inputRef={orgRef} label="Organization" />
+          <Autocomplete
+            options={(Array.isArray(orgs) ? orgs : [])}
+            getOptionLabel={(option) => option.ORG_NAME}
+            onChange={(event, newValue) => setOrg(newValue)}
+            popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
+            value={org}
+            renderInput={(params) => (
+              <TextFieldStyled
+                {...params}
+                label="Organization"
+                variant="outlined"
+              />
+            )}
+            isOptionEqualToValue={(option, value) => option.ORG_ID === value.ORG_ID}
+          />
           <Typography color="error.main">{errMsg}</Typography>
         </DialogContent>
         <DialogContent>

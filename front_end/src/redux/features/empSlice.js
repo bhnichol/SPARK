@@ -36,6 +36,7 @@ export const createEmployee = createAsyncThunk(
     async ({ empData, axios }, {dispatch, rejectWithValue }) => {
         try {
             const response = await axios.post(API_URL.EMP_URL, {employees: empData});
+            
             dispatch(fetchEmployees(axios));
             return response.data;
         } catch (err) {

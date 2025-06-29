@@ -28,14 +28,14 @@ const createEmployee = async (req, res) => {
             EMP_NAME: { type: oracledb.STRING, maxSize: 50},
             USER_ID: {type: oracledb.NUMBER},
             PAY_RATE: { type: oracledb.NUMBER},
-            ORG_ID: { type: oracledb.STRING, maxSize: 50}
+            ORG_ID: { type: oracledb.NUMBER}
         }});
         res.status(201).json({'message': `employees successfully created.`})
         if(conn){
             conn.close()
         }
     } catch (err) {
-
+        console.error(err);
         res.status(400).json({message: err});
     }
 }
