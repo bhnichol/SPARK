@@ -51,14 +51,14 @@ const DraggableItem = ({ id, children }) => {
 
 const pathsEqual = (a, b) => a.length === b.length && a.every((val, idx) => val === b[idx]);
 
-const countTotalNodes = (items) => {
+export const countTotalNodes = (items) => {
     return items.reduce((count, item) => count + 1 + countTotalNodes(item.children || []), 0);
 };
 
 const getDepth = (path) => path.length
 
-const WbsTree = () => {
-    const [wbs, setWbs] = useState([{ id: crypto.randomUUID(), title: '', children: [], start_date: "", end_date: "" }])
+const WbsTree = ({wbs, setWbs}) => {
+
     const [activeId, setActiveId] = useState(null);
     const theme = useTheme();
     // const getBackgroundColorForDepth = (depth, theme) => {

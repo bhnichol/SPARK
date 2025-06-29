@@ -1,14 +1,13 @@
-import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Button, darken, IconButton, List, ListItem, styled, Typography, useTheme } from "@mui/material";
-import { useEffect, useState } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import AddIcon from '@mui/icons-material/Add';
+import { Accordion, AccordionDetails, AccordionSummary, Autocomplete, Box, Button, darken, IconButton, List, ListItem, styled, Typography, useTheme } from "@mui/material";
+import { useState } from "react";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import SecondaryButton from "../../components/Buttons/secondaryButton";
 import TextFieldStyled from "../../components/TextFieldStyled";
 import { useSelector } from "react-redux";
-import WbsTree from "../../components/Projects/WbsTree";
+import WbsTree, { countTotalNodes } from "../../components/Projects/WbsTree";
+import FormatListNumberedOutlinedIcon from '@mui/icons-material/FormatListNumberedOutlined';
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -28,9 +27,8 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
   color: theme.palette.primary.contrastText,
 }));
 
+
 const ProjectCreate = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const theme = useTheme();
   const [groups, setGroups] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
@@ -39,6 +37,7 @@ const ProjectCreate = () => {
   const [emp, setEmp] = useState(null);
   const [position, setPosition] = useState(null);
   const positions = useSelector((state) => state.roles?.list) ?? [];
+  const [wbs, setWbs] = useState([{ id: crypto.randomUUID(), title: '', children: [], start_date: "", end_date: "" }]);
 
   const removeEmp = (selectedEmp) => {
     if (selectedEmp !== "") {
@@ -195,16 +194,36 @@ const ProjectCreate = () => {
       {/* WBS */}
 
       <Accordion sx={{ backgroundColor: 'background.default', border: `1px solid ${theme.palette.background.contrastBg}` }} defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: 'primary.contrastText' }} />}>
-          <div className="m-[10px] p-[20px]">
-            <Typography fontSize={20} sx={{ color: "primary.contrastText" }}>Work Breakdown Structure</Typography>
-          </div>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon sx={{ color: 'primary.contrastText' }} />}
+          sx={{
+            width: '100%',
+            paddingX: 2,               // Optional: Adjust horizontal padding
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              width: '100%',
+            }}
+          >
+            <Typography fontSize={20} sx={{ color: "primary.contrastText" }}>
+              Work Breakdown Structure
+            </Typography>
+            <Typography sx={{ color: "primary.contrastText", display: 'flex', alignItems: 'center', gap: 1 }}>
+              {countTotalNodes(wbs)}/30 <FormatListNumberedOutlinedIcon />
+            </Typography>
+          </Box>
         </AccordionSummary>
         <AccordionDetails>
-          <WbsTree/>
+          <WbsTree wbs={wbs} setWbs={setWbs} />
         </AccordionDetails>
       </Accordion>
-
+      <Button variant="contained" color='success' sx={{ width: "100px", alignSelf: "center" }}>Submit</Button>
     </div>
   )
 }
