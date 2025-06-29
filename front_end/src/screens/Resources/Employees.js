@@ -24,7 +24,6 @@ const Employees = () => {
     const emps = useSelector((state) => state.employees.list);
     const [errMsg, setErrMsg] = useState("");
     const axiosPrivate = useAxiosPrivate();
-    const [success, setSuccess] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [empDelete, setEmpDelete] = useState({});
     const dispatch = useDispatch();
@@ -41,11 +40,6 @@ const Employees = () => {
         }
     ];
 
-
-    useEffect(() => {
-        dispatch(fetchEmployees(axiosPrivate));
-        console.log(emps);
-    }, [dispatch]);
 
     const deleteEmp = async () => {
         try {

@@ -22,19 +22,21 @@ import { clearEmployees, fetchEmployees } from './redux/features/empSlice';
 import useAuth from './hooks/useAuth';
 import { useEffect } from 'react';
 import useAxiosPrivate from './hooks/useAxiosPrivate';
+import { clearOrgs, fetchOrgs } from './redux/features/orgSlice';
 
 function App() {
   document.body.style = 'background-color: #1A1A1D'
-  const auth = useAuth();
+  const { auth } = useAuth();
   const dispatch = useDispatch();
-  const state = useSelector((state) => state);
   const axios = useAxiosPrivate();
 
 useEffect(() => {
   if (auth?.accessToken) {
     dispatch(fetchEmployees(axios));
+    dispatch(fetchOrgs(axios));
   } else {
     dispatch(clearEmployees());
+    dispatch(clearOrgs());
   }
 }, [auth?.accessToken, dispatch]);
   return (

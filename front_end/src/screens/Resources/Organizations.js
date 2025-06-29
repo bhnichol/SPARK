@@ -15,11 +15,14 @@ import DataGridStyled from "../../components/DatagridStyled";
 import substituteUrlParams from "../../api/util";
 import EditIcon from '@mui/icons-material/Edit';
 import OrgEdit from "../../components/Resources/OrgEdit";
+import { useDispatch, useSelector } from 'react-redux';
+import { removeEmp } from "../../redux/features/orgSlice";
 
 const Organizations = () => {
   const [visible, setVisible] = useState(false);
-  const [orgs, setOrgs] = useState([]);
-  const [emps, setEmps] = useState([]);
+  const emps = useSelector((state) => state.employees.list);
+  const orgs = useSelector((state) => state.organizations.list);
+  const dispatch = useDispatch();
   const [success, setSuccess] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [errMsg, setErrMsg] = useState("");
@@ -38,53 +41,15 @@ const Organizations = () => {
     {
       field: 'Delete',
       headerName: 'Remove',
-      width: 100,
+      width: 100, 
       renderCell: (params) => { return (<IconButton sx={{ color: 'error.main' }} onClick={() => { setEmpDelete(params.row); setConfirmDelete(true) }}><DeleteOutlinedIcon style={{ color: theme.palette.error.main }} /></IconButton>) }
     }
   ];
 
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await axiosPrivate.get(API_URL.EMP_URL);
-        setEmps(response.data);
-      } catch (err) {
-        if (!err?.response) {
-          setErrMsg('No Server Response');
-        } else {
-          setErrMsg('Failed to load employees');
-        }
-      }
-    };
-
-    const fetchOrgs = async () => {
-      try {
-        const response = await axiosPrivate.get(API_URL.ORG_URL);
-        setOrgs([...response.data]);
-        if (selectedOrg) {
-          const match = response.data.find(o => Number(o.ORG_ID) === Number(selectedOrg.ORG_ID));
-          setSelectedOrg(match ?? null);
-          setInputValue(match?.ORG_NAME ?? "");
-        }
-      } catch (err) {
-        if (!err?.response) {
-          setErrMsg('No Server Response');
-        } else {
-          setErrMsg('Failed to load employees');
-        }
-      }
-    };
-    fetchOrgs();
-    fetchEmployees();
-    setErrMsg("");
-    setSuccess(false);
-  }, [success]);
-
   const deleteEmp = async () => {
     try {
       setErrMsg("");
-      console.log(substituteUrlParams(API_URL.ORG_MAN_URL.REMOVE, { "id": empDelete.EMP_ID }))
-      const response = await axiosPrivate.post(substituteUrlParams(API_URL.ORG_MAN_URL.REMOVE, { "id": empDelete.EMP_ID }));
+      await dispatch({removeEmp, axiosPrivate}).unwrap();
     } catch (err) {
       console.log(err);
       if (!err?.response) {
