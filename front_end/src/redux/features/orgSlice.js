@@ -18,12 +18,12 @@ export const fetchOrgs = createAsyncThunk('organizations/fetchOrgs', async (axio
 
 export const deleteOrg = createAsyncThunk(
     'organizations/deleteOrg',
-    async ({ ORG_ID, axios }, { dispatch, rejectWithValue }) => {
+    async ({ orgid, axios }, { dispatch, rejectWithValue }) => {
         try {
-            const response = await axios.delete(API_URL.ORG_URL, { data: { orgid: ORG_ID } });
+            const response = await axios.delete(API_URL.ORG_URL, { data: { orgid: orgid } });
             dispatch(fetchOrgs(axios));
             dispatch(fetchEmployees(axios));
-            return ORG_ID;
+            return orgid;
         } catch (err) {
 
             if (!err.response) {
@@ -55,11 +55,13 @@ export const createOrg = createAsyncThunk(
     'organizations/createOrg',
     async ({ employees, ORG_NAME, PARENT_ORG, axios }, { dispatch, rejectWithValue }) => {
         try {
-            const response = await axios.post(API_URL.EMP_URL, { employees: employees, ORG_NAME: ORG_NAME, PARENT_ORG: PARENT_ORG });
+            console.log(PARENT_ORG);
+            const response = await axios.post(API_URL.ORG_URL, { employees: employees, ORG_NAME: ORG_NAME, PARENT_ORG: PARENT_ORG });
             dispatch(fetchOrgs(axios));
             dispatch(fetchEmployees(axios));
             return response.data;
         } catch (err) {
+            console.error(err);
             if (!err.response) {
                 return rejectWithValue('No Server Response');
             }
@@ -68,6 +70,23 @@ export const createOrg = createAsyncThunk(
     }
 );
 
+export const editOrg = createAsyncThunk(
+    'organizations/editOrg',
+    async ({employees, ORG_NAME, PARENT_ORG, orgid, axios }, { dispatch, rejectWithValue }) => {
+        try {
+            const response = await axios.post(substituteUrlParams(API_URL.ORG_MAN_URL.EDIT, { "id": orgid }),{ employees, ORG_NAME, PARENT_ORG});
+            dispatch(fetchOrgs(axios));
+            dispatch(fetchEmployees(axios));
+            return orgid;
+        } catch (err) {
+
+            if (!err.response) {
+                return rejectWithValue('No Server Response');
+            }
+            return rejectWithValue(err.response.data?.message || 'Failed to remove employee');
+        }
+    }
+);
 
 const organizationsSlice = createSlice({
     name: 'organizations',
@@ -133,6 +152,19 @@ const organizationsSlice = createSlice({
                 state.status = 'succeeded';
             })
             .addCase(removeEmp.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message;
+            })
+
+            // edit org
+
+            .addCase(editOrg.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(editOrg.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+            })
+            .addCase(editOrg.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
             });

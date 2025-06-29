@@ -49,7 +49,7 @@ const Organizations = () => {
   const deleteEmp = async () => {
     try {
       setErrMsg("");
-      await dispatch({removeEmp, axiosPrivate}).unwrap();
+      await dispatch(removeEmp({empid:empDelete.EMP_ID, axios:axiosPrivate})).unwrap();
     } catch (err) {
       console.log(err);
       if (!err?.response) {
@@ -144,19 +144,17 @@ const Organizations = () => {
       <OrgCreate
         open={visible}
         onClose={() => setVisible(false)}
-        onSuccess={() => setSuccess(true)}
         orgs={orgs}
         emps={emps}
       />
       <OrgEdit
         open={editVisible}
-        onClose={() => setEditVisible(false)}
-        onSuccess={() => setSuccess(true)}
+        onClose={() => {setSelectedOrg(null); setEditVisible(false);}}
         orgs={orgs}
         emps={emps}
         org={selectedOrg}
       />
-      <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} onSubmit={() => deleteEmp().then(setSuccess(true))} target={empDelete.EMP_NAME} />
+      <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} onSubmit={() => deleteEmp()} target={empDelete.EMP_NAME} />
     </div>
   );
 };

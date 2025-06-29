@@ -57,6 +57,7 @@ const deleteOrg = async (req, res) => {
         const conn = await oracledb.getConnection();
         await conn.execute('UPDATE SPARK_ORGS SET INACTIVE_IND = 1, INACTIVE_DATE = SYSDATE WHERE ORG_ID = :ORG_ID AND USER_ID = :USER_ID', {ORG_ID:Number(req.body.orgid), USER_ID:Number(req.user_id)});
         await conn.execute('UPDATE SPARK_EMPLOYEES SET ORG_ID = NULL WHERE ORG_ID = :ORG_ID AND USER_ID = :USER_ID', {ORG_ID:Number(req.body.orgid), USER_ID:Number(req.user_id)},{autoCommit: true});
+        await conn.execute('UPDATE SPARK_ORGS SET PARENT_ORG = NULL WHERE PARENT_ORG = :ORG_ID AND USER_ID = :USER_ID', {ORG_ID:Number(req.body.orgid), USER_ID:Number(req.user_id)},{autoCommit: true});
         res.status(200).json({'message' : 'Org deleted successfully'});
         if(conn){
             conn.close()

@@ -6,11 +6,11 @@ import TextFieldStyled from "../TextFieldStyled";
 import { useEffect, useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import API_URL from "../../api/api";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import substituteUrlParams from "../../api/util";
 import ConfirmDelete from "../ConfirmDelete";
+import { useDispatch } from "react-redux";
+import { editOrg, deleteOrg as deleteOrgThunk } from "../../redux/features/orgSlice";
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -32,6 +32,7 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
 
 const OrgEdit = (props) => {
   const axiosPrivate = useAxiosPrivate();
+  const dispatch = useDispatch();
   const [errMsg, setErrMsg] = useState("");
   const [emps, setEmps] = useState([]);
   const [name, setName] = useState(null);
@@ -73,12 +74,9 @@ const OrgEdit = (props) => {
     }
     else {
       try {
-        await axiosPrivate.post(substituteUrlParams(API_URL.ORG_MAN_URL.EDIT, {id: props.org.ORG_ID ?? null}),
-          JSON.stringify({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null })
-        )
+        await dispatch(editOrg({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null, orgid: props.org.ORG_ID ?? null, axios: axiosPrivate })).unwrap();
 
         handleClose();
-        props.onSuccess();
       } catch (err) {
         console.log(err);
         if (!err?.response) { setErrMsg('No Server Response') }
@@ -101,12 +99,9 @@ const OrgEdit = (props) => {
     }
     else {
       try {
-        await axiosPrivate.delete(API_URL.ORG_URL,
-          {data:{orgid:props.org.ORG_ID}}
-        )
+        await dispatch(deleteOrgThunk({orgid:props.org.ORG_ID, axios: axiosPrivate})).unwrap();
 
         handleClose();
-        props.onSuccess();
       } catch (err) {
         console.log(err);
         if (!err?.response) { setErrMsg('No Server Response') }
@@ -204,7 +199,7 @@ const OrgEdit = (props) => {
         </div>
 
       </DialogActions>
-      <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} onSubmit={() => deleteOrg().then(handleClose())} target={props.org?.ORG_NAME ?? ""}/>
+      <ConfirmDelete open={confirmDelete} onClose={() => setConfirmDelete(false)} onSubmit={() => deleteOrg()} target={props.org?.ORG_NAME ?? ""}/>
     </DialogStyled>
   )
 }

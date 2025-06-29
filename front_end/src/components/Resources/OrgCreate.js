@@ -3,13 +3,13 @@ import DialogStyled from "../DialogStyled";
 import CloseIcon from '@mui/icons-material/Close';
 import SecondaryButton from "../Buttons/secondaryButton";
 import TextFieldStyled from "../TextFieldStyled";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
-import API_URL from "../../api/api";
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useDispatch } from "react-redux";
+import { createOrg } from "../../redux/features/orgSlice";
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -62,14 +62,10 @@ const OrgCreate = (props) => {
     }
     else {
     try {
-      const response = await axiosPrivate.post(API_URL.ORG_URL,
-        JSON.stringify({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null})
-      )
+        await dispatch(createOrg({ employees: emps, ORG_NAME: name, PARENT_ORG: parent?.ORG_ID || null, axios: axiosPrivate})).unwrap();
 
       handleClose();
-      props.onSuccess();
     } catch (err) {
-      console.log(err);
       if (!err?.response) { setErrMsg('No Server Response') }
       else if (err.response?.status === 400) {
         setErrMsg('Org details missing');
