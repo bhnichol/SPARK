@@ -5,13 +5,12 @@ import SecondaryButton from "../../components/Buttons/secondaryButton";
 import DataGridStyled from "../../components/DatagridStyled";
 import EmpCreate from '../../components/Resources/EmpCreate';
 import { useState } from 'react';
-import { useEffect } from 'react';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
 import { IconButton, Typography, useTheme } from '@mui/material';
 import ConfirmDelete from '../../components/ConfirmDelete';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchEmployees, deleteEmployee } from '../../redux/features/empSlice';
+import { deleteEmployee } from '../../redux/features/empSlice';
 
 
 

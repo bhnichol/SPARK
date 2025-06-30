@@ -9,7 +9,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Avatar, Divider, Menu } from '@mui/material';
+import { Avatar, Menu } from '@mui/material';
 import useLogout from '../../hooks/useLogout';
 import {navItems, accountItems} from './navItems'
 import { useState } from 'react';

@@ -17,7 +17,7 @@ import Organizations from './screens/Resources/Organizations';
 import Nonlabor from './screens/Resources/Nonlabor';
 import Projects from './screens/Projects/Projects';
 import ProjectCreate from './screens/Projects/ProjectCreate';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { clearEmployees, fetchEmployees } from './redux/features/empSlice';
 import useAuth from './hooks/useAuth';
 import { useEffect } from 'react';
