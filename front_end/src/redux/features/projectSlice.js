@@ -1,26 +1,26 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API_URL from '../../api/api';
 
-export const fetchEmployees = createAsyncThunk('employees/fetchEmployees', async (axios, { rejectWithValue }) => {
+export const fetchProjects = createAsyncThunk('projects/fetchProjects', async (axios, { rejectWithValue }) => {
     try {
-        const response = await axios.get(API_URL.EMP_URL);
+        const response = await axios.get(API_URL.PROJECT_URL);
         return response.data;
     }
     catch (err) {
         if (!err.response) {
             return rejectWithValue('No Server Response');
         }
-        return rejectWithValue(err.response.data?.message || 'Failed to fetch employees');
+        return rejectWithValue(err.response.data?.message || 'Failed to fetch projects');
     }
 });
 
-export const deleteEmployee = createAsyncThunk(
-    'employees/deleteEmployee',
-    async ({ EMP_ID, axios }, { dispatch, rejectWithValue }) => {
+export const deleteProject = createAsyncThunk(
+    'projects/deleteProject',
+    async ({ PROJECT_ID, axios }, { dispatch, rejectWithValue }) => {
         try {
-            const response = await axios.delete(API_URL.EMP_URL, { data: { empid: EMP_ID } });
-            dispatch(fetchEmployees(axios));
-            return EMP_ID;
+            const response = await axios.delete(API_URL.EMP_URL, { data: { empid: PROJECT_ID } });
+            dispatch(fetchProjects(axios));
+            return PROJECT_ID;
         } catch (err) {
 
             if (!err.response) {
@@ -31,13 +31,13 @@ export const deleteEmployee = createAsyncThunk(
     }
 );
 
-export const createEmployee = createAsyncThunk(
-    'employees/createEmployee',
-    async ({ empData, axios }, {dispatch, rejectWithValue }) => {
+export const createProject = createAsyncThunk(
+    'projects/createProject',
+    async ({ pdt,wbs, title, notes, group, subtype, start_date, axios }, {dispatch, rejectWithValue }) => {
         try {
-            const response = await axios.post(API_URL.EMP_URL, {employees: empData});
+            const response = await axios.post(API_URL.PROJECT_URL, { pdt,wbs, title, notes, group, subtype, start_date});
             
-            dispatch(fetchEmployees(axios));
+            dispatch(fetchProjects(axios));
             return response.data;
         } catch (err) {
             if (!err.response) {
@@ -50,7 +50,7 @@ export const createEmployee = createAsyncThunk(
 
 
 const projectSlice = createSlice({
-    name: 'employees',
+    name: 'projects',
     initialState: {
         list: [],
         selected: null,
@@ -68,40 +68,40 @@ const projectSlice = createSlice({
     extraReducers: (builder) => {
         builder
             // fetch projects
-            .addCase(fetchEmployees.pending, (state) => {
+            .addCase(fetchProjects.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(fetchEmployees.fulfilled, (state, action) => {
+            .addCase(fetchProjects.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.list = action.payload;
             })
-            .addCase(fetchEmployees.rejected, (state, action) => {
+            .addCase(fetchProjects.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
             })
 
             // delete project
 
-            .addCase(deleteEmployee.pending, (state) => {
+            .addCase(deleteProject.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(deleteEmployee.fulfilled, (state, action) => {
+            .addCase(deleteProject.fulfilled, (state, action) => {
                 state.status = 'succeeded';
             })
-            .addCase(deleteEmployee.rejected, (state, action) => {
+            .addCase(deleteProject.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
             })
 
             // create project
 
-            .addCase(createEmployee.pending, (state) => {
+            .addCase(createProject.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(createEmployee.fulfilled, (state, action) => {
+            .addCase(createProject.fulfilled, (state, action) => {
                 state.status = 'succeeded';
             })
-            .addCase(createEmployee.rejected, (state, action) => {
+            .addCase(createProject.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
             });

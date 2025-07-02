@@ -49,6 +49,7 @@ app.use(verifyJWT);
 
 app.use('/employees', require('./routes/api/employees'));
 app.use('/org', require('./routes/api/org'));
+app.use('/project', require('./routes/api/project'));
 
 app.all('*', (req, res) => {
     res.status(404);

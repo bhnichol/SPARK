@@ -5,9 +5,11 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import SecondaryButton from "../../components/Buttons/secondaryButton";
 import TextFieldStyled from "../../components/TextFieldStyled";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import WbsTree, { countTotalNodes } from "../../components/Projects/WbsTree";
 import FormatListNumberedOutlinedIcon from '@mui/icons-material/FormatListNumberedOutlined';
+import { createProject as createProjectThunk } from "../../redux/features/projectSlice";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate"
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -30,6 +32,14 @@ const StyledListItem = styled(ListItem)(({ theme }) => ({
 
 const ProjectCreate = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
+  const [title, setTitle] = useState("");
+  const [notes, setNotes] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [group, setGroup] = useState(null);
+  const [subtype, setSubtype] = useState(null);
+  const [errMsg, setErrMsg] = useState("");
   const [groups, setGroups] = useState([]);
   const [subtypes, setSubtypes] = useState([]);
   const [pdt, setPdt] = useState([]);
@@ -38,6 +48,19 @@ const ProjectCreate = () => {
   const [position, setPosition] = useState(null);
   const positions = useSelector((state) => state.roles?.list) ?? [];
   const [wbs, setWbs] = useState([{ id: crypto.randomUUID(), title: '', children: [], start_date: "", end_date: "" }]);
+
+  const flatWbs = (items, parentId = null) => {
+    const results = [];
+    items.forEach((item) => {
+      results.push({
+        TITLE: item.title, START_DATE: item.start_date, END_DATE: item.end_date, PARENT_WBS: parentId, ID: item.id
+      });
+      if (item.children && item.children.length > 0) {
+        results.push(...flatWbs(item.children, item.id));
+      }
+    });
+    return results;
+  }
 
   const removeEmp = (selectedEmp) => {
     if (selectedEmp !== "") {
@@ -51,6 +74,23 @@ const ProjectCreate = () => {
       setPosition(null);
     }
   }
+
+  const createProject = async () => {
+    try {
+      await dispatch(createProjectThunk({pdt:pdt,wbs:flatWbs(wbs), title:title, notes:notes, group:group?.GROUP_ID ?? null, subtype:subtype?.SUBTYPE_ID ?? null, start_date:startDate, axios:axiosPrivate })).unwrap();
+    } catch (err) {
+      if (!err?.response) { setErrMsg('No Server Response') }
+      else if (err.response?.status === 400) {
+        setErrMsg('Project details missing');
+      } else if (err.response?.status === 401) {
+        setErrMsg('Unauthorized Access');
+      }
+      else {
+        setErrMsg('Project failed to be created.');
+      }
+    }
+  }
+
   return (
     <div className="space-y-[10px] flex flex-col h-full">
       <Accordion sx={{ backgroundColor: 'background.default', border: `1px solid ${theme.palette.background.contrastBg}` }} defaultExpanded>
@@ -65,9 +105,12 @@ const ProjectCreate = () => {
             <TextFieldStyled label="Title" variant="outlined" slotProps={{
               inputLabel: {
                 shrink: true,
-              }
+              },
+              htmlInput: { maxLength: 100 }
             }}
               className="md:col-span-2 lg:col-span-2"
+              onChange={(e) => setTitle(e.target.value)}
+              value={title}
             />
             <TextFieldStyled label={"Create Date"} value={new Date().toISOString().split('T')[0]} variant="outlined" disabled
               slotProps={{
@@ -83,10 +126,11 @@ const ProjectCreate = () => {
               }}
             />
             <Autocomplete
-              options={[...groups, "Test", "Demo"]}
-              getOptionLabel={(option) => option}
+              options={[...groups, { TITLE: "Test", GROUP_ID: -1 }, { TITLE: "Demo", GROUP_ID: -2 }]}
+              getOptionLabel={(option) => option.TITLE}
               popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
-
+              onChange={(e, v) => setGroup(v)}
+              value={group}
               renderInput={(params) => (
                 <TextFieldStyled
                   {...params}
@@ -95,13 +139,14 @@ const ProjectCreate = () => {
 
                 />
               )}
-              isOptionEqualToValue={(option, value) => option === value}
+              isOptionEqualToValue={(option, value) => option.GROUP_ID === value.GROUP_ID}
             />
             <Autocomplete
-              options={[...subtypes, "Test", "Demo"]}
-              getOptionLabel={(option) => option}
+              options={[...subtypes, { TITLE: "Test", SUBTYPE_ID: -1 }, { TITLE: "Demo", SUBTYPE_ID: -2 }]}
+              getOptionLabel={(option) => option.TITLE}
               popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
-
+              onChange={(e, v) => setSubtype(v)}
+              value={subtype}
               renderInput={(params) => (
                 <TextFieldStyled
                   {...params}
@@ -110,9 +155,11 @@ const ProjectCreate = () => {
 
                 />
               )}
-              isOptionEqualToValue={(option, value) => option === value}
+              isOptionEqualToValue={(option, value) => option.SUBTYPE_ID === value.SUBTYPE_ID}
             />
             <TextFieldStyled label="Start Date" variant="outlined" type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
               slotProps={{
                 inputLabel: {
                   shrink: true,
@@ -121,9 +168,18 @@ const ProjectCreate = () => {
             <TextFieldStyled
               label="General Notes"
               variant="outlined"
+              value={notes}
+              onChange={(e) => { setNotes(e.target.value); }}
               multiline
               minRows={4}
               className="md:col-span-2 lg:col-span-3"
+              helperText={`${notes?.length ?? 0}/2000 characters`}
+              slotProps={{ htmlInput: { maxLength: 2000 } }}
+              sx={{
+                '& .MuiFormHelperText-root': {
+                  color: 'primary.contrastText',
+                }
+              }}
             />
           </div>
         </AccordionDetails>
@@ -142,7 +198,7 @@ const ProjectCreate = () => {
             <div className="space-y-[10px]">
               <Autocomplete
                 options={(Array.isArray(emps) ? emps : []).filter(emp => !pdt.some(a => a.EMP_ID === emp.EMP_ID))}
-                getOptionLabel={(option) => option.EMP_NAME}
+                getOptionLabel={(option) => option.EMP_NAME ?? ""}
                 popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
                 onChange={(event, newValue) => setEmp(newValue)}
                 value={emp}
@@ -156,7 +212,7 @@ const ProjectCreate = () => {
                 isOptionEqualToValue={(option, value) => option.EMP_ID === value.EMP_ID}
               />
               <Autocomplete
-                options={(Array.isArray(positions) ? [...positions, { TITLE: "Project Manager", POS_ID: -1 }, { TITLE: "Technical Lead", POS_ID: -2 }] : [])}
+                options={(Array.isArray(positions) ? [...positions, { TITLE: "Project Manager", POSITION_ID: -1 }, { TITLE: "Technical Lead", POSITION_ID: -2 }] : [])}
                 getOptionLabel={(option) => option.TITLE}
                 onChange={(event, newValue) => setPosition(newValue)}
                 popupIcon={<ArrowDropDownIcon sx={{ color: 'primary.contrastText' }} />}
@@ -168,7 +224,7 @@ const ProjectCreate = () => {
                     variant="outlined"
                   />
                 )}
-                isOptionEqualToValue={(option, value) => option.TITLE === value.TITLE}
+                isOptionEqualToValue={(option, value) => option.POSITION_ID === value.POSITION_ID}
               />
               <SecondaryButton variant="contained" onClick={() => addEmp({ ...emp, ...position })}>Add</SecondaryButton>
             </div>
@@ -223,7 +279,8 @@ const ProjectCreate = () => {
           <WbsTree wbs={wbs} setWbs={setWbs} />
         </AccordionDetails>
       </Accordion>
-      <Button variant="contained" color='success' sx={{ width: "100px", alignSelf: "center" }}>Submit</Button>
+      {errMsg !== "" && errMsg && <Typography color="error.main">{errMsg}</Typography>}
+      <Button variant="contained" color='success' sx={{ width: "100px", alignSelf: "center" }} onClick={() => createProject()}>Submit</Button>
     </div>
   )
 }
