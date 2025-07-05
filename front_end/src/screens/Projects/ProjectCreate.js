@@ -10,6 +10,7 @@ import WbsTree, { countTotalNodes } from "../../components/Projects/WbsTree";
 import FormatListNumberedOutlinedIcon from '@mui/icons-material/FormatListNumberedOutlined';
 import { createProject as createProjectThunk } from "../../redux/features/projectSlice";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate"
+import { useNavigate } from "react-router-dom";
 
 const StyledList = styled(List)(({ theme }) => ({
   maxHeight: '200px',
@@ -34,6 +35,7 @@ const ProjectCreate = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -44,6 +46,7 @@ const ProjectCreate = () => {
   const [subtypes, setSubtypes] = useState([]);
   const [pdt, setPdt] = useState([]);
   const emps = useSelector((state) => state.employees.list);
+  const selectedProject = useSelector((state) => state.projects.selected);
   const [emp, setEmp] = useState(null);
   const [position, setPosition] = useState(null);
   const positions = useSelector((state) => state.roles?.list) ?? [];
@@ -77,7 +80,10 @@ const ProjectCreate = () => {
 
   const createProject = async () => {
     try {
-      await dispatch(createProjectThunk({pdt:pdt,wbs:flatWbs(wbs), title:title, notes:notes, group:group?.GROUP_ID ?? null, subtype:subtype?.SUBTYPE_ID ?? null, start_date:startDate, axios:axiosPrivate })).unwrap();
+      await dispatch(createProjectThunk({ pdt: pdt, wbs: flatWbs(wbs), title: title, notes: notes, group: group?.GROUP_ID ?? null, subtype: subtype?.SUBTYPE_ID ?? null, start_date: startDate, axios: axiosPrivate })).unwrap();
+      if (selectedProject?.PROJECT_ID) {
+        navigate("/projects/view/" + selectedProject.PROJECT_ID)
+      }
     } catch (err) {
       if (!err?.response) { setErrMsg('No Server Response') }
       else if (err.response?.status === 400) {
@@ -102,7 +108,7 @@ const ProjectCreate = () => {
         <AccordionDetails>
           <div className="m-[10px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            <TextFieldStyled label="Title" variant="outlined" slotProps={{
+            <TextFieldStyled label="Title" variant="outlined" required slotProps={{
               inputLabel: {
                 shrink: true,
               },
@@ -160,10 +166,12 @@ const ProjectCreate = () => {
             <TextFieldStyled label="Start Date" variant="outlined" type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
+              required
               slotProps={{
                 inputLabel: {
                   shrink: true,
                 }
+
               }} />
             <TextFieldStyled
               label="General Notes"
@@ -267,9 +275,9 @@ const ProjectCreate = () => {
               width: '100%',
             }}
           >
-            <Typography fontSize={20} sx={{ color: "primary.contrastText" }}>
-              Work Breakdown Structure
-            </Typography>
+            <div className="m-[10px] p-[20px]">
+              <Typography fontSize={20} sx={{ color: "primary.contrastText" }}>Work Breakdown Structure</Typography>
+            </div>
             <Typography sx={{ color: "primary.contrastText", display: 'flex', alignItems: 'center', gap: 1 }}>
               {countTotalNodes(wbs)}/30 <FormatListNumberedOutlinedIcon />
             </Typography>

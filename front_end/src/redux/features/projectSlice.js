@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import API_URL from '../../api/api';
+import substituteUrlParams from '../../api/util';
 
 export const fetchProjects = createAsyncThunk('projects/fetchProjects', async (axios, { rejectWithValue }) => {
     try {
@@ -33,11 +34,13 @@ export const deleteProject = createAsyncThunk(
 
 export const createProject = createAsyncThunk(
     'projects/createProject',
-    async ({ pdt,wbs, title, notes, group, subtype, start_date, axios }, {dispatch, rejectWithValue }) => {
+    async ({ pdt, wbs, title, notes, group, subtype, start_date, axios }, { dispatch, rejectWithValue }) => {
         try {
-            const response = await axios.post(API_URL.PROJECT_URL, { pdt,wbs, title, notes, group, subtype, start_date});
-            
+            const response = await axios.post(API_URL.PROJECT_URL, { pdt, wbs, title, notes, group, subtype, start_date });
+            console.log("Resposne:",response.data.PROJECT_ID);
+
             dispatch(fetchProjects(axios));
+            dispatch(fetchSingleProject({id:response.data.PROJECT_ID, axios:axios}));
             return response.data;
         } catch (err) {
             if (!err.response) {
@@ -48,6 +51,21 @@ export const createProject = createAsyncThunk(
     }
 );
 
+export const fetchSingleProject = createAsyncThunk('projects/fetchSingleProject', 
+    async ({id,axios}, { rejectWithValue }) => {
+    try {
+        const response = await axios.get(substituteUrlParams(API_URL.PROJECT_MAN_URL.GET, {"id": id}));
+        console.log("RESPONSE: " , response.data);
+        return response.data;
+    }
+    catch (err) {
+        console.error(err);
+        if (!err.response) {
+            return rejectWithValue('No Server Response');
+        }
+        return rejectWithValue(err.response.data?.message || 'Failed to fetch projects');
+    }
+});
 
 const projectSlice = createSlice({
     name: 'projects',
@@ -104,9 +122,21 @@ const projectSlice = createSlice({
             .addCase(createProject.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message;
-            });
+            })
 
-            // select project
+        // select project
+
+            .addCase(fetchSingleProject.pending, (state) => {
+                state.status = 'loading';
+            })
+            .addCase(fetchSingleProject.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.selected = action.payload
+            })
+            .addCase(fetchSingleProject.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.error.message;
+            });
     },
 });
 

@@ -8,6 +8,8 @@ router.route('/')
       .get(verifyRoles(rolesList.User), projectController.getAllProjects)
       .post(verifyRoles(rolesList.User), projectController.createProject)
       .delete(verifyRoles(rolesList.User), projectController.deleteProject)
+router.route('/get/:id')
+      .get(verifyRoles(rolesList.User), projectController.getProject)
 
 
 module.exports = router;

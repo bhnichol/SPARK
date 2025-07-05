@@ -12,7 +12,10 @@ const API_URL = {
     EMP_URL: './employees',
     STATUS_URL: './status',
     ROLES_URL: './roles',
-    PROJECT_URL: './project'
+    PROJECT_URL: './project',
+    PROJECT_MAN_URL: {
+        GET: './project/get/:id'
+    }
 }
 
 

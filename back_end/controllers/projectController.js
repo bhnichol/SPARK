@@ -4,13 +4,30 @@ const oracledb = require('oracledb');
 const getAllProjects = async (req, res) => {
     try {
         const conn = await oracledb.getConnection();
-        const results = await conn.execute('SELECT PROJECT_ID, TITLE FROM SPARK_PROJECTS WHERE (INACTIVE_IND <> 1 OR INACTIVE_IND IS NULL)  AND USER_ID = :USER_ID ORDER BY ORG_ID ASC', [Number(req.user_id)], { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        const results = await conn.execute('SELECT PROJECT_ID, TITLE FROM SPARK_PROJECTS WHERE (INACTIVE_IND <> 1 OR INACTIVE_IND IS NULL)  AND USER_ID = :USER_ID ORDER BY TITLE ASC', [Number(req.user_id)], { outFormat: oracledb.OUT_FORMAT_OBJECT });
         res.send(results.rows);
         if (conn) {
             conn.close()
         }
     } catch (err) {
         res.send(err);
+    }
+}
+
+const getProject = async (req, res) => {
+    const projectid = req?.params?.id
+    if(!projectid) return res.status(400).json({"message": "missing project id"})
+    try {
+        const conn = await oracledb.getConnection();
+        const results = await conn.execute('SELECT * FROM SPARK_PROJECTS WHERE (INACTIVE_IND <> 1 OR INACTIVE_IND IS NULL) AND USER_ID = :USER_ID AND PROJECT_ID = :PROJECT_ID', [Number(req.user_id), Number(projectid)], { outFormat: oracledb.OUT_FORMAT_OBJECT });
+        console.log()
+        res.send(results.rows[0]);
+
+        if (conn) {
+            conn.close()
+        }
+    } catch (err) {
+        res.status(400).json({"message":err});
     }
 }
 
@@ -26,7 +43,7 @@ const createProject = async (req, res) => {
                 NOTES: notes,
                 GROUP_ID: group,
                 SUBTYPE_ID: subtype,
-                START_DATE: start_date,
+                START_DATE: new Date(start_date),
                 PROJECT_ID: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
             },
             { autoCommit: true }
@@ -41,8 +58,7 @@ const createProject = async (req, res) => {
                     POSITION_ID: emp.POSITION_ID,
                     PROJECT_ID: newProjectId,
                     USER_ID: req.user_id
-                })),
-                { autoCommit: true }
+                }))
             );
         }
         if (wbs) {
@@ -51,13 +67,13 @@ const createProject = async (req, res) => {
                 const parentDbId = row.PARENT_WBS ? idMap[row.PARENT_WBS] : null;
 
                 const result = await conn.execute(
-                    `INSERT INTO WBS_TABLE (TITLE, START_DATE, END_DATE, PARENT_WBS)
+                    `INSERT INTO SPARK_WBS (TITLE, START_DATE, END_DATE, PARENT_WBS)
                     VALUES (:title, :startDate, :endDate, :parentWbsId)
                     RETURNING WBS_ID INTO :outId`,
                     {
                         title: row.TITLE,
-                        startDate: row.START_DATE,
-                        endDate: row.END_DATE,
+                        startDate: new Date(row.START_DATE),
+                        endDate: new Date(row.END_DATE),
                         parentWbsId: parentDbId,
                         outId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
                     }
@@ -68,7 +84,7 @@ const createProject = async (req, res) => {
             }
             await conn.commit();
         }
-            res.status(201).json({ 'message': `project successfully created.` })
+            res.status(201).json({ 'message': `project successfully created.`, 'PROJECT_ID': newProjectId })
             if (conn) {
                 conn.close()
             }
@@ -97,4 +113,4 @@ const deleteProject = async (req, res) => {
     }
 
 
-    module.exports = { getAllProjects, deleteProject, createProject };
+    module.exports = { getAllProjects, deleteProject, createProject, getProject };
